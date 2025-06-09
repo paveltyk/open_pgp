@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.2
+
+### Enhancements
+
+* Better error message for:
+  * `OpenPGP.Util.public_key_algo_tuple/1`
+  * `OpenPGP.Util.sym_algo_tuple/1`
+  * `OpenPGP.Util.sym_algo_cipher_block_size/1`
+  * `OpenPGP.Util.sym_algo_key_size/1`
+
 ## v0.6.0
 
 ### Enhancements
