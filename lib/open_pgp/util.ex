@@ -118,6 +118,11 @@ defmodule OpenPGP.Util do
   }
   @public_key_ids Map.keys(@public_key_algos)
 
+  @pk_algo_error """
+  Expected public key algo ID to be one of:
+  #{@public_key_algos |> Enum.map(&"#{elem(&1, 0)} - #{elem(&1, 1)}") |> Enum.join("\n")}
+  """
+
   @doc """
   Convert public-key algorithm ID to a tuple with ID and name binary.
 
@@ -148,6 +153,8 @@ defmodule OpenPGP.Util do
   @spec public_key_algo_tuple(1..255) :: public_key_algo_tuple()
   def public_key_algo_tuple(algo) when algo in @public_key_ids,
     do: {algo, @public_key_algos[algo]}
+
+  def public_key_algo_tuple(algo), do: raise(@pk_algo_error <> "\nGot: #{inspect(algo)}")
 
   @sym_algos %{
     0 => {"Plaintext or unencrypted data", 0, 0},
