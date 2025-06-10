@@ -118,6 +118,11 @@ defmodule OpenPGP.Util do
   }
   @public_key_ids Map.keys(@public_key_algos)
 
+  @pk_algo_error """
+  Expected public key algo ID to be one of:
+  #{@public_key_algos |> Enum.map(&"#{elem(&1, 0)} - #{elem(&1, 1)}") |> Enum.join("\n")}
+  """
+
   @doc """
   Convert public-key algorithm ID to a tuple with ID and name binary.
 
@@ -149,7 +154,10 @@ defmodule OpenPGP.Util do
   def public_key_algo_tuple(algo) when algo in @public_key_ids,
     do: {algo, @public_key_algos[algo]}
 
+  def public_key_algo_tuple(algo), do: raise(@pk_algo_error <> "\nGot: #{inspect(algo)}")
+
   @sym_algos %{
+    # => {name, cipher_block_size, key_size}
     0 => {"Plaintext or unencrypted data", 0, 0},
     1 => {"IDEA [IDEA]", 64, 128},
     2 => {"TripleDES (DES-EDE, [SCHNEIER] [HAC] - 168 bit key derived from 192)", 64, 192},
@@ -177,6 +185,11 @@ defmodule OpenPGP.Util do
     110 => {"Private/Experimental algorithm", nil, nil}
   }
   @sym_algo_ids Map.keys(@sym_algos)
+
+  @sym_algo_error """
+  Expected sym. algo ID to be one of:
+  #{@sym_algos |> Enum.map(&"#{elem(&1, 0)} - #{elem(elem(&1, 1), 0)}") |> Enum.join("\n")}
+  """
 
   @doc """
   Convert symmetric encryption algorithm ID to a tuple with ID and name binary.
@@ -209,6 +222,7 @@ defmodule OpenPGP.Util do
   """
   @spec sym_algo_tuple(byte()) :: sym_algo_tuple()
   def sym_algo_tuple(algo) when algo in @sym_algo_ids, do: {algo, elem(@sym_algos[algo], 0)}
+  def sym_algo_tuple(algo), do: raise(@sym_algo_error <> "\nGot: #{inspect(algo)}")
 
   @doc """
   Detects cipher block size (bits) given symmetric encryption algorithm ID or a tuple.
@@ -216,6 +230,7 @@ defmodule OpenPGP.Util do
   @spec sym_algo_cipher_block_size(byte() | sym_algo_tuple()) :: non_neg_integer()
   def sym_algo_cipher_block_size({algo, _}), do: sym_algo_cipher_block_size(algo)
   def sym_algo_cipher_block_size(algo) when algo in @sym_algo_ids, do: elem(@sym_algos[algo], 1)
+  def sym_algo_cipher_block_size(algo), do: raise(@sym_algo_error <> "\nGot: #{inspect(algo)}")
 
   @doc """
   Detects cipher key size (bits) given symmetric encryption algorithm ID or a tuple.
@@ -223,6 +238,7 @@ defmodule OpenPGP.Util do
   @spec sym_algo_key_size(byte() | sym_algo_tuple()) :: non_neg_integer()
   def sym_algo_key_size({algo, _}), do: sym_algo_key_size(algo)
   def sym_algo_key_size(algo) when algo in @sym_algo_ids, do: elem(@sym_algos[algo], 2)
+  def sym_algo_key_size(algo), do: raise(@sym_algo_error <> "\nGot: #{inspect(algo)}")
 
   @comp_algos %{
     0 => "Uncompressed",

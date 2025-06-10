@@ -110,10 +110,21 @@ defmodule OpenPGP.PublicKeyEncryptedSessionKeyPacket do
   Decode Public-Key Encrypted Session Key Packet given input binary.
   Return structured packet and remaining binary.
   """
+  @decode_error """
+  Expected Public-Key Encrypted Session Key Packet to start with 10 bytes sequence:
+    - A one-octet number giving the version number of the packet type.
+    - An eight-octet number that gives the Key ID of the public key to
+      which the session key is encrypted.
+    - A one-octet number giving the public-key algorithm used.
+  """
   @impl OpenPGP.Packet.Behaviour
   @spec decode(binary()) :: {t(), <<>>}
   def decode("" <> _ = input) do
-    <<version::8, pub_key_id::bytes-size(8), pub_key_algo, ciphertext::binary>> = input
+    {version, pub_key_id, pub_key_algo, ciphertext} =
+      case input do
+        <<ver::8, pk_id::bytes-size(8), algo::8, ciphertext::binary>> -> {ver, pk_id, algo, ciphertext}
+        _ -> raise(@decode_error <> "\nGot #{byte_size(input)} byte(s) of " <> inspect(input, binaries: :as_binaries))
+      end
 
     packet = %__MODULE__{
       version: version,
